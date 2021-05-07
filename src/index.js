@@ -1,56 +1,39 @@
 // "use strict";
-import observer from "@cocreate/observer";
 import "./style.css";
-
 
 const coCreateResize = {
     selector: '', //'.resize',
     resizers: [],
-    resizeWidgets: [],
 
-    init: function(handleObj) {
+    init: function(handleObj) {       
         for (var handleKey in handleObj)
             if (handleObj.hasOwnProperty(handleKey) && handleKey == 'selector')
                 this.selector = handleObj[handleKey];
 
-        this.resizers = document.querySelectorAll(this.selector);
-        var _this = this;
+        this.resizers = document.querySelectorAll(this.selector);      
+        console.log("first init")
         this.resizers.forEach(function(resize, idx) {
-            let resizeWidget = new CoCreateResize(resize, handleObj);
-            _this.resizeWidgets[idx] = resizeWidget;
+            new CoCreateResize(resize, handleObj);          
         })
-    },
-
-    initElement: function(target) {
-        let resizeWidget = new CoCreateResize(target, {
-            dragLeft: "[data-resize_handle='left']",
-            dragRight: "[data-resize_handle='right']",
-            dragTop: "[data-resize_handle='top']",
-            dragBottom: "[data-resize_handle='bottom']"
-        });
-        this.resizeWidgets[0] = resizeWidget;
     }
 }
 
-function CoCreateResize(resizer, options) {
-    this.resizeWidget = resizer;
-    this.cornerSize = 10;
-    this.init(options);
-}
-
-CoCreateResize.prototype = {
-    init: function(handleObj) {
+class CoCreateResize {
+    constructor(resizer, options) {      
+        this.resizeWidget = resizer;
+        this.cornerSize = 10;
         if (this.resizeWidget) {
-            this.leftDrag = this.resizeWidget.querySelector(handleObj['dragLeft']);
-            this.rightDrag = this.resizeWidget.querySelector(handleObj['dragRight']);
-            this.topDrag = this.resizeWidget.querySelector(handleObj['dragTop']);
-            this.bottomDrag = this.resizeWidget.querySelector(handleObj['dragBottom']);
+            this.leftDrag = this.resizeWidget.querySelector(options['dragLeft']);
+            this.rightDrag = this.resizeWidget.querySelector(options['dragRight']);
+            this.topDrag = this.resizeWidget.querySelector(options['dragTop']);
+            this.bottomDrag = this.resizeWidget.querySelector(options['dragBottom']);
             this.bindListeners();
             this.initResize();
-        }
-    },
 
-    initResize: function() {
+        }
+    }  
+
+    initResize() {
         if (this.leftDrag) {
             this.addListenerMulti(this.leftDrag, 'mousemove touchmove', this.checkLeftDragTopCorner);
             this.addListenerMulti(this.leftDrag, 'mousemove touchmove', this.checkLeftDragBottomCorner);
@@ -67,9 +50,9 @@ CoCreateResize.prototype = {
             this.addListenerMulti(this.bottomDrag, 'mousemove touchmove', this.checkBottomDragLeftCorner);
             this.addListenerMulti(this.bottomDrag, 'mousemove touchmove', this.checkBottomDragRightCorner);
         }
-    },
+    }
 
-    initTopDrag: function(e) {
+    initTopDrag(e) {
         this.processIframe();
         this.startTop = parseInt(document.defaultView.getComputedStyle(this.resizeWidget).top, 10);
         this.startHeight = parseInt(document.defaultView.getComputedStyle(this.resizeWidget).height, 10);
@@ -81,9 +64,9 @@ CoCreateResize.prototype = {
 
         this.addListenerMulti(document.documentElement, 'mousemove touchmove', this.doTopDrag);
         this.addListenerMulti(document.documentElement, 'mouseup touchend', this.stopDrag);
-    },
+    }
 
-    doTopDrag: function(e) {
+    doTopDrag(e) {
         let top, height;
 
         if (e.touches)
@@ -95,9 +78,9 @@ CoCreateResize.prototype = {
             return;
         this.resizeWidget.style.top = top + 'px';
         this.resizeWidget.style.height = height + 'px';
-    },
+    }
 
-    initBottomDrag: function(e) {
+    initBottomDrag(e) {
         this.processIframe();
         this.startTop = parseInt(document.defaultView.getComputedStyle(this.resizeWidget).top, 10);
         this.startHeight = parseInt(document.defaultView.getComputedStyle(this.resizeWidget).height, 10);
@@ -109,9 +92,9 @@ CoCreateResize.prototype = {
 
         this.addListenerMulti(document.documentElement, 'mousemove touchmove', this.doBottomDrag);
         this.addListenerMulti(document.documentElement, 'mouseup touchend', this.stopDrag);
-    },
+    }
 
-    doBottomDrag: function(e) {
+    doBottomDrag(e) {
         let height = 0;
 
         if (e.touches)
@@ -122,9 +105,9 @@ CoCreateResize.prototype = {
         if (height < 10)
             return;
         this.resizeWidget.style.height = height + 'px';
-    },
+    }
 
-    initLeftDrag: function(e) {
+    initLeftDrag(e) {
         this.processIframe();
         this.startLeft = parseInt(document.defaultView.getComputedStyle(this.resizeWidget).left, 10);
         this.startWidth = parseInt(document.defaultView.getComputedStyle(this.resizeWidget).width, 10);
@@ -136,9 +119,9 @@ CoCreateResize.prototype = {
 
         this.addListenerMulti(document.documentElement, 'mousemove touchmove', this.doLeftDrag);
         this.addListenerMulti(document.documentElement, 'mouseup touchend', this.stopDrag);
-    },
+    }
 
-    doLeftDrag: function(e) {
+    doLeftDrag(e) {
         let left, width;
         if (e.touches)
             e = e.touches[0];
@@ -149,9 +132,9 @@ CoCreateResize.prototype = {
             return;
         this.resizeWidget.style.left = left + 'px';
         this.resizeWidget.style.width = width + 'px';
-    },
+    }
 
-    initRightDrag: function(e) {
+    initRightDrag(e) {
         this.processIframe();
         this.startWidth = parseInt(document.defaultView.getComputedStyle(this.resizeWidget).width, 10);
 
@@ -162,9 +145,9 @@ CoCreateResize.prototype = {
 
         this.addListenerMulti(document.documentElement, 'mousemove touchmove', this.doRightDrag);
         this.addListenerMulti(document.documentElement, 'mouseup touchend', this.stopDrag);
-    },
+    }
 
-    doRightDrag: function(e) {
+    doRightDrag(e) {
         let width = 0;
         if (e.touches)
             width = this.startWidth + e.touches[0].clientX - this.startX;
@@ -173,10 +156,10 @@ CoCreateResize.prototype = {
         if (width < 10)
             return;
         this.resizeWidget.style.width = width + 'px';
-    },
+    }
 
-    stopDrag: function(e) {
-        this.resizeWidget.querySelectorAll('iframe').forEach(function(item) {
+    stopDrag(e) {
+        this.resizeWidget.querySelectorAll('iframe').forEach(function (item) {
             item.style.pointerEvents = null;
         });
 
@@ -185,9 +168,10 @@ CoCreateResize.prototype = {
         this.removeListenerMulti(document.documentElement, 'mousemove touchmove', this.doLeftDrag);
         this.removeListenerMulti(document.documentElement, 'mousemove touchmove', this.doRightDrag);
         this.removeListenerMulti(document.documentElement, 'mouseup touchend', this.stopDrag);
-    },
+    }
 
-    checkTopDragLeftCorner: function(e) {
+    checkTopDragLeftCorner(e) {
+        if(!this.topDrag) return;
         let offsetX, scrollLeft = document.documentElement.scrollLeft;
 
         if (e.touches)
@@ -203,9 +187,10 @@ CoCreateResize.prototype = {
         } else {
             this.topDrag.style.cursor = 's-resize';
         }
-    },
+    }
 
-    checkLeftDragTopCorner: function(e) {
+    checkLeftDragTopCorner(e) {
+        if(!this.leftDrag) return;
         let offsetY, scrollTop = document.documentElement.scrollTop;
 
         if (e.touches)
@@ -221,9 +206,9 @@ CoCreateResize.prototype = {
         } else {
             this.leftDrag.style.cursor = 'e-resize';
         }
-    },
+    }
 
-    checkTopDragRightCorner: function(e) {
+    checkTopDragRightCorner(e) {
         let offsetX, scrollLeft = document.documentElement.scrollLeft;
 
         this.removeListenerMulti(this.topDrag, 'mousedown touchstart', this.initTopDrag);
@@ -242,9 +227,9 @@ CoCreateResize.prototype = {
                 this.topDrag.style.cursor = 's-resize';
             }
         }
-    },
+    }
 
-    checkRightDragTopCorner: function(e) {
+    checkRightDragTopCorner(e) {
         let offsetY, scrollTop = document.documentElement.scrollTop;
 
         this.removeListenerMulti(this.rightDrag, 'mousedown touchstart', this.initRightDrag);
@@ -264,9 +249,10 @@ CoCreateResize.prototype = {
                 this.rightDrag.style.cursor = 'e-resize';
             }
         }
-    },
+    }
 
-    checkBottomDragLeftCorner: function(e) {
+    checkBottomDragLeftCorner(e) {
+        if(!this.bottomDrag) return;
         let offsetX, scrollLeft = document.documentElement.scrollLeft;
 
         if (e.touches)
@@ -282,9 +268,9 @@ CoCreateResize.prototype = {
         } else {
             this.bottomDrag.style.cursor = 's-resize';
         }
-    },
+    }
 
-    checkLeftDragBottomCorner: function(e) {
+    checkLeftDragBottomCorner(e) {
         let offsetY, scrollTop = document.documentElement.scrollTop;
 
         this.removeListenerMulti(this.leftDrag, 'mousedown touchstart', this.initLeftDrag);
@@ -304,9 +290,9 @@ CoCreateResize.prototype = {
                 this.leftDrag.style.cursor = 'e-resize';
             }
         }
-    },
+    }
 
-    checkBottomDragRightCorner: function(e) {
+    checkBottomDragRightCorner(e) {
         let offsetX, scrollLeft = document.documentElement.scrollLeft;
 
         this.removeListenerMulti(this.bottomDrag, 'mousedown touchstart', this.initBottomDrag);
@@ -325,9 +311,9 @@ CoCreateResize.prototype = {
                 this.bottomDrag.style.cursor = 's-resize';
             }
         }
-    },
+    }
 
-    checkRightDragBottomCorner: function(e) {
+    checkRightDragBottomCorner(e) {
         let offsetY, scrollTop = document.documentElement.scrollTop;
 
         this.removeListenerMulti(this.rightDrag, 'mousedown touchstart', this.initRightDrag);
@@ -347,9 +333,10 @@ CoCreateResize.prototype = {
                 this.rightDrag.style.cursor = 'e-resize';
             }
         }
-    },
+    }
 
-    bindListeners: function() {
+    bindListeners() {
+        console.log("bind")
         this.initLeftDrag = this.initLeftDrag.bind(this);
         this.doLeftDrag = this.doLeftDrag.bind(this);
         this.initTopDrag = this.initTopDrag.bind(this);
@@ -368,10 +355,11 @@ CoCreateResize.prototype = {
         this.checkLeftDragBottomCorner = this.checkLeftDragBottomCorner.bind(this);
         this.checkBottomDragRightCorner = this.checkBottomDragRightCorner.bind(this);
         this.checkRightDragBottomCorner = this.checkRightDragBottomCorner.bind(this);
-    },
+    }
 
     // Get an element's distance from the top of the page
-    getTopDistance: function(elem) {
+    getTopDistance(elem) {
+        if (!elem) return;
         var location = 0;
         if (elem.offsetParent) {
             do {
@@ -380,10 +368,11 @@ CoCreateResize.prototype = {
             } while (elem);
         }
         return location >= 0 ? location : 0;
-    },
+    }
 
     // Get an element's distance from the left of the page
-    getLeftDistance: function(elem) {
+    getLeftDistance(elem) {
+        if (!elem) return;
         var location = 0;
         if (elem.offsetParent) {
             do {
@@ -392,47 +381,31 @@ CoCreateResize.prototype = {
             } while (elem);
         }
         return location >= 0 ? location : 0;
-    },
+    }
 
     // Bind multiiple events to a listener
-    addListenerMulti: function(element, eventNames, listener) {
+    addListenerMulti(element, eventNames, listener) {
+        if (!element) return;
         var events = eventNames.split(' ');
         for (var i = 0, iLen = events.length; i < iLen; i++) {
             element.addEventListener(events[i], listener, false);
         }
-    },
+    }
 
     // Remove multiiple events from a listener
-    removeListenerMulti: function(element, eventNames, listener) {
+    removeListenerMulti(element, eventNames, listener) {
+        if (!element) return;
         var events = eventNames.split(' ');
         for (var i = 0, iLen = events.length; i < iLen; i++) {
             element.removeEventListener(events[i], listener, false);
         }
-    },
+    }
 
     // style="pointer-events:none" for iframe when drag event starts
-    processIframe: function() {
-        this.resizeWidget.querySelectorAll('iframe').forEach(function(item) {
+    processIframe() {
+        this.resizeWidget.querySelectorAll('iframe').forEach(function (item) {
             item.style.pointerEvents = 'none';
         });
     }
 }
-
-observer.init({
-    name: 'CoCreateResize',
-    observe: ['subtree', 'childList'],
-    include: '.resize',
-    callback: function(mutation) {
-        coCreateResize.initElement(mutation.target);
-    }
-})
-// CoCreateResize.init({
-//     selector: "* [data-resize]",
-//     dragLeft: "[data-resize='left']",
-//     dragRight: "[data-resize='right']",
-//     dragTop: "[data-resize='top']",
-//     dragBottom: "[data-resize='bottom']",
-// });
-
-
-export default coCreateResize;
+export default coCreateResize
